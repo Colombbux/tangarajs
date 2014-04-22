@@ -1,4 +1,4 @@
-define(['jquery', 'split-pane','TCanvas', 'TEnvironment', 'TEditor', 'TLog'], function($, SplitPane, TCanvas, TEnvironment, TEditor, TLog) {
+define(['jquery', 'split-pane','TCanvas', 'TEnvironment', 'TEditor', 'TLog', 'TPopup'], function($, SplitPane, TCanvas, TEnvironment, TEditor, TLog, TPopup) {
     function TFrame() {
         var domFrame = document.createElement("div");
         domFrame.id = "tframe";
@@ -37,10 +37,13 @@ define(['jquery', 'split-pane','TCanvas', 'TEnvironment', 'TEditor', 'TLog'], fu
         bottomDivInner.appendChild(logElement);
         bottomDiv.appendChild(bottomDivInner);
         domFrame.appendChild(bottomDiv);
+		
+		var popup = new TPopup();
 
         // Set environment
         TEnvironment.setCanvas(canvas);
         TEnvironment.setLog(log);
+		TEnvironment.setPopup(popup);
 
         this.getElement = function() {
             return domFrame;

@@ -1,9 +1,11 @@
-define(['jquery', 'TEnvironment'], function($, TEnvironment) {
+define(['jquery', 'TEnvironment', 'TPopup'], function($, TEnvironment, TPopup) {
     function TRuntime() {
         var libs = new Array();
         var translatedNames = new Array();
         var runtimeFrame;
         var runtimeCallback;
+		var objectListInstancied = new Array();
+		var methodListInstancied = new Array();
         
         this.load = function() {
             require(['TEnvironment'], function(TEnvironment) {
@@ -40,24 +42,39 @@ define(['jquery', 'TEnvironment'], function($, TEnvironment) {
             });
         };
         
-        this.execute = function(commands) {
+        this.execute = function(commands, parameter) {
             var error = false;
             var message;
             try {
                 if (typeof (runtimeCallback) === 'undefined') {
-                    eval(commands);
+                    if (typeof commands === 'string' || commands instanceof String)
+                        eval(commands);
+                    else if (typeof commands === 'function' || commands instanceof Function)
+                        commands(parameter);
                 } else {
-                    runtimeCallback(commands);
+                    runtimeCallback(commands, parameter);
                 }
             } catch (e) {
                 error = true;
                 message = e.message;
             }
-            require(['TEnvironment'], function(TEnvironment) {
+            require(['TEnvironment','TPopup'], function(TEnvironment, TPopup) {
                 if (error)
                     TEnvironment.addLog(commands, message);
                 else
-                    TEnvironment.addLog(commands);
+                    {
+						TEnvironment.addLog(commands);
+						var objectInstancied = $.trim(commands.split('=','1'));
+						objectListInstancied.push(objectInstancied);
+						var tmp = $.trim(commands.split('(','1'));
+						
+						methodInstancied = tmp.split('new','2')[1];
+						methodListInstancied.push(methodInstancied);
+						//TPopup.addCommand(verif);
+						
+						console.log(objectListInstancied);
+						console.log(methodListInstancied);
+					}
             });
         };
         

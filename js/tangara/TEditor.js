@@ -1,4 +1,4 @@
-define(['jquery','ace/ace', 'TCanvas', 'TEnvironment'], function($,ace,TCanvas,TEnvironment) {
+define(['jquery','ace/ace', 'TCanvas', 'TEnvironment', 'TPopup'], function($,ace,TCanvas,TEnvironment, TPopup) {
 
     function TEditor() {
         var domEditor = document.createElement("div");
@@ -158,6 +158,18 @@ define(['jquery','ace/ace', 'TCanvas', 'TEnvironment'], function($,ace,TCanvas,T
                     }
                     editor.setValue(commandLine);
                     editor.moveCursorToPosition(cursorPosition);
+                },
+                readOnly: true // false if this command should not apply in readOnly mode
+             });
+			 aceEditor.commands.addCommand({
+                name: 'completeCommand',
+                bindKey: {win: '.',  mac: '.'},
+                exec: function(editor) {
+					editor.insert("."); 
+					console.log("completion event");
+					// afficher la liste des ojects instanciés
+					TPopup = TEnvironment.getPopup();
+					console.log("Vérifications : " + TPopup.show() + "**");
                 },
                 readOnly: true // false if this command should not apply in readOnly mode
              });
