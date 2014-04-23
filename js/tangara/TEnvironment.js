@@ -5,8 +5,11 @@ define(['jquery', 'TRuntime', 'quintus'], function($, TRuntime, Quintus) {
         var runtimeFrame;
         var runtimeCallback;
         var quintusInstance;
-		var popup;
+        var objectListInstanced = [];
+        var methodListInstanced = [];
         var translated = new Array();
+        var completion = new Array();
+        var completionList = new Array();
 
         this.messages;
 
@@ -49,11 +52,6 @@ define(['jquery', 'TRuntime', 'quintus'], function($, TRuntime, Quintus) {
             window.console.log("* Loading Runtime");
             TRuntime.load();
         };
-		
-		this.setPopup = function(element) {
-            popup = element;
-            return;
-        };
 
         this.setCanvas = function(element) {
             canvas = element;
@@ -65,15 +63,10 @@ define(['jquery', 'TRuntime', 'quintus'], function($, TRuntime, Quintus) {
             return;
         };
 
-
         this.getCanvas = function() {
             return canvas;
         };
-
-		this.getPopup = function() {
-            return popup;
-        };
-		
+        
         this.execute = function(command, parameter) {
             TRuntime.execute(command, parameter);
         };
@@ -135,11 +128,26 @@ define(['jquery', 'TRuntime', 'quintus'], function($, TRuntime, Quintus) {
                 async: false,
                 success: function(data) {
                     translated[file] = new Array();
+                    completion[file] = new Array();
+                    
                     window.console.log("traduction : " + file);
                     window.console.log("Language : " + language);
                     $.each(data[language]['methods'], function(key, val) {
                         addTranslatedMethod(aClass, val['name'], val['translated']);
                         translated[file][val['name']] = val['translated'];
+                        completion[file][val['name']] = val['displayed'];
+                        require(['TEnvironment'], function(TEnvironment) {
+                            if (key == 0) {
+                                /* add className from file : DIRTY */
+                                //var classNameFromFile = (file.split('js/tangara/objects/',2)[1]).split('/resources',1);
+                                //console.log("method : " + classNameFromFile);
+                                //completionList.push(file);
+                            }
+                            else
+                                completionList = TEnvironment.getCompletionList();
+                                completionList.push(completion[file][val['name']]);
+                            
+                        });
                     });
                 },
                 error: function(data, status, error) {
@@ -162,6 +170,10 @@ define(['jquery', 'TRuntime', 'quintus'], function($, TRuntime, Quintus) {
             }
             return initialClass;
         };
+        
+        this.getCompletionList = function () {
+            return completionList;
+        }
 
         this.getResource = function(location) {
             return this.getBaseUrl() + "/js/tangara/resources/" + location;
@@ -193,6 +205,10 @@ define(['jquery', 'TRuntime', 'quintus'], function($, TRuntime, Quintus) {
                 document.body.appendChild(iframe);
                 runtimeFrame = iframe.contentWindow || iframe;
             }
+            return runtimeFrame;
+        };
+
+        this.getRuntimeFrame = function() {
             return runtimeFrame;
         };
 
@@ -236,7 +252,36 @@ define(['jquery', 'TRuntime', 'quintus'], function($, TRuntime, Quintus) {
         this.getQuintusInstance = function() {
             return quintusInstance;
         };
+        
+        this.setObjectListInstanced = function(instance) {
+            var objectInstanced = $.trim(instance.split('=','1'));
+            objectListInstanced.push(objectInstanced);
+        }
+        
+        this.setMethodListInstanced = function(method) {
+            var tmp = $.trim(method.split('(','1'));
+            methodInstanced = $.trim(tmp.split('new','2')[1]);
+            methodListInstanced.push(methodInstanced);
+        }
+        
+        this.getObjectListInstanced = function() {
+            return objectListInstanced;
+        }
+        
+        this.getMethodListInstanced = function() {
+            return methodListInstanced;
+        }
 
+        this.clearObjectListInstanced = function() {
+            objectListInstanced = [];
+            return;
+        }
+
+        this.clearMethodListInstanced = function() {
+            methodListInstanced = [];
+            return;
+        }
+        
         this.pause = function() {
             if (quintusInstance.loop) {
                 quintusInstance.pauseGame();

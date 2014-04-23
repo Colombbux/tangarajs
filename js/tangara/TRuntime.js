@@ -1,4 +1,4 @@
-define(['jquery', 'TEnvironment', 'TPopup'], function($, TEnvironment, TPopup) {
+define(['jquery', 'TEnvironment'], function($, TEnvironment) {
     function TRuntime() {
         var libs = new Array();
         var translatedNames = new Array();
@@ -64,16 +64,8 @@ define(['jquery', 'TEnvironment', 'TPopup'], function($, TEnvironment, TPopup) {
                 else
                     {
 						TEnvironment.addLog(commands);
-						var objectInstancied = $.trim(commands.split('=','1'));
-						objectListInstancied.push(objectInstancied);
-						var tmp = $.trim(commands.split('(','1'));
-						
-						methodInstancied = tmp.split('new','2')[1];
-						methodListInstancied.push(methodInstancied);
-						//TPopup.addCommand(verif);
-						
-						console.log(objectListInstancied);
-						console.log(methodListInstancied);
+						TEnvironment.setObjectListInstanced(commands);
+						TEnvironment.setMethodListInstanced(commands);
 					}
             });
         };

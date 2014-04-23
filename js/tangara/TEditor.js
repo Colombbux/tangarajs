@@ -1,4 +1,4 @@
-define(['jquery','ace/ace', 'TCanvas', 'TEnvironment', 'TPopup'], function($,ace,TCanvas,TEnvironment, TPopup) {
+define(['jquery','ace/ace', 'TCanvas', 'TEnvironment'], function($,ace,TCanvas,TEnvironment) {
 
     function TEditor() {
         var domEditor = document.createElement("div");
@@ -14,7 +14,7 @@ define(['jquery','ace/ace', 'TCanvas', 'TEnvironment', 'TPopup'], function($,ace
         domEditorCellButtons.className = "teditor-buttons";
 
         var domEditorText = document.createElement("div");
-	domEditorText.setAttribute("contenteditable","true");
+    domEditorText.setAttribute("contenteditable","true");
         domEditorText.id = "teditor-text-"+TEditor.editorId;
         domEditorText.className = "teditor-text-inner";
 
@@ -54,6 +54,7 @@ define(['jquery','ace/ace', 'TCanvas', 'TEnvironment', 'TPopup'], function($,ace
         TEditor.editorId++;
 
         var aceEditor;
+        var langTools;
 
         this.getElement = function() {
             return domEditor;
@@ -66,6 +67,8 @@ define(['jquery','ace/ace', 'TCanvas', 'TEnvironment', 'TPopup'], function($,ace
             aceEditor.renderer.setShowGutter(false);
             aceEditor.setFontSize("20px");
             aceEditor.setHighlightActiveLine(false);
+            aceEditor.setOptions({enableBasicAutocompletion: true});
+            //langTools = ace.require("ace/ext/language_tools");
             aceEditor.focus();
 
             $(buttonExecute).click(function() {
@@ -77,6 +80,8 @@ define(['jquery','ace/ace', 'TCanvas', 'TEnvironment', 'TPopup'], function($,ace
                 if (window.confirm(TEnvironment.getMessage('clear-confirm'))) {
                     TEnvironment.getCanvas().clear();
                     TEnvironment.clearLog();
+                    TEnvironment.clearObjectListInstanced();
+                    TEnvironment.clearMethodListInstanced();
                 }
             });
 
@@ -161,15 +166,41 @@ define(['jquery','ace/ace', 'TCanvas', 'TEnvironment', 'TPopup'], function($,ace
                 },
                 readOnly: true // false if this command should not apply in readOnly mode
              });
-			 aceEditor.commands.addCommand({
+             aceEditor.commands.addCommand({
                 name: 'completeCommand',
                 bindKey: {win: '.',  mac: '.'},
                 exec: function(editor) {
-					editor.insert("."); 
-					console.log("completion event");
-					// afficher la liste des ojects instanciés
-					TPopup = TEnvironment.getPopup();
-					console.log("Vérifications : " + TPopup.show() + "**");
+                    console.log("completion event");
+                    // afficher la liste des ojects instanciés
+                    var command = aceEditor.getSession().getValue();
+                    var objectList = TEnvironment.getObjectListInstanced();
+                    var methodList = TEnvironment.getMethodListInstanced();
+                    console.log("command :" + command + "obj : " + objectList);
+                    var index = objectList.indexOf(command);
+                    if (index > -1) {
+                        console.log("completion : ");
+                        console.log("trouvé à l'index : " + index);
+                        console.log("de la classe : " + methodList[index]);
+                        
+                        console.log("langue : " + this.language);
+                        //console.log("langue : " + resourceList);
+                        //translationFile = parentClass.;
+                        window.console.log(TEnvironment.getCompletionList());
+                        
+                        var rhymeCompleter = {
+                            getCompletions: function(editor, session, pos, prefix, callback) {
+                                if (prefix.length === 0) { callback(null, []); return }
+                                $.getJSON("http://rhymebrain.com/talk?function=getRhymes&word=" + prefix,
+                                function(wordList) {
+                                    // wordList like [{"word":"flow","freq":24,"score":300,"flags":"bc","syllables":"1"}]
+                                    callback(null, wordList.map(function(ea) {
+                                        return {name: ea.word, value: ea.word, score: ea.score, meta: "rhyme"}
+                                    }));
+                                })
+                            }
+                        }
+                        langTools.addCompleter(rhymeCompleter);
+                    }
                 },
                 readOnly: true // false if this command should not apply in readOnly mode
              });
