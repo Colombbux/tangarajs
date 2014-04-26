@@ -1,0 +1,11 @@
+{
+    "fr": {
+        "entree":"return",
+        "gauche":"left",
+        "droite":"right",
+        "haut":"up",
+        "bas":"down"
+    },
+    "en": {
+    }
+}
